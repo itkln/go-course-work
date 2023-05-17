@@ -4,14 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"log"
+	"movieapp/gen"
 	"movieapp/metadata/internal/controller/metadata"
-	httphandler "movieapp/metadata/internal/handler/http"
+	grpchandler "movieapp/metadata/internal/handler/grpc"
 	"movieapp/metadata/internal/repository/memory"
 	"movieapp/pkg/discovery"
 	"movieapp/pkg/discovery/consul"
-	"net/http"
+	"net"
 	"time"
 )
 
@@ -42,10 +44,16 @@ func main() {
 	defer registry.Deregister(ctx, instanceID, serviceName)
 	repo := memory.New()
 	svc := metadata.New(repo)
-	h := httphandler.New(svc)
-	router := mux.NewRouter()
-	router.Handle("/metadata", http.HandlerFunc(h.GetMetadata))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+	h := grpchandler.New(svc)
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	srv := grpc.NewServer()
+	reflection.Register(srv)
+	gen.RegisterMetadataServiceServer(srv, h)
+
+	if err := srv.Serve(lis); err != nil {
 		panic(err)
 	}
 }

@@ -4,14 +4,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"log"
+	"movieapp/gen"
 	"movieapp/movie/internal/controller/movie"
 	metadatagateway "movieapp/movie/internal/gateway/metadata/http"
 	ratinggateway "movieapp/movie/internal/gateway/rating/http"
-	httphandler "movieapp/movie/internal/handler/http"
+	grpchandler "movieapp/movie/internal/handler/grpc"
 	"movieapp/pkg/discovery"
 	"movieapp/pkg/discovery/consul"
-	"net/http"
+	"net"
 	"time"
 )
 
@@ -44,9 +47,15 @@ func main() {
 	metadataGateway := metadatagateway.New(registry)
 	ratingGateway := ratinggateway.New(registry)
 	svc := movie.New(ratingGateway, metadataGateway)
-	h := httphandler.New(svc)
-	http.Handle("/movie", http.HandlerFunc(h.GetMovieDetails))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+	h := grpchandler.New(svc)
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	if err != nil {
+		log.Fatalf("failed to listen:%v", err)
+	}
+	srv := grpc.NewServer()
+	reflection.Register(srv)
+	gen.RegisterMovieServiceServer(srv, h)
+	if err := srv.Serve(lis); err != nil {
 		panic(err)
 	}
 }
