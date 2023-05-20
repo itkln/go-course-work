@@ -12,7 +12,7 @@ import (
 	"movieapp/pkg/discovery/consul"
 	"movieapp/rating/internal/controller/rating"
 	grpchandler "movieapp/rating/internal/handler/grpc"
-	"movieapp/rating/internal/repository/memory"
+	"movieapp/rating/internal/repository/mysql"
 	"net"
 	"time"
 )
@@ -42,8 +42,11 @@ func main() {
 		}
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
-	repo := memory.New()
-	svc := rating.New(repo)
+	repo, err := mysql.New()
+	if err != nil {
+		panic(err)
+	}
+	svc := rating.New(repo, nil)
 	h := grpchandler.New(svc)
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
 	if err != nil {

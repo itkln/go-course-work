@@ -23,3 +23,18 @@ type Rating struct {
 	UserID     UserID      `json:"userID"`
 	Value      RatingValue `json:"value"`
 }
+
+type RatingEvent struct {
+	UserID     UserID          `json:"userID"`
+	RecordID   RecordID        `json:"recordID"`
+	RecordType RecordType      `json:"recordType"`
+	Value      RatingValue     `json:"ratingValue"`
+	EventType  RatingEventType `json:"eventType"`
+}
+
+type RatingEventType string
+
+const (
+	RatingEventTypePut    = "put"
+	RatingEventTypeDelete = "delete"
+)

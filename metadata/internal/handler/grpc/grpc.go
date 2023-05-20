@@ -10,7 +10,6 @@ import (
 	"movieapp/metadata/pkg/model"
 )
 
-// Handler defines a movie metadata gRPC handler
 type Handler struct {
 	gen.UnimplementedMetadataServiceServer
 	ctrl *metadata.Controller
@@ -31,4 +30,14 @@ func (h *Handler) GetMetadata(ctx context.Context, req *gen.GetMetadataRequest) 
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return &gen.GetMetadataResponse{Metadata: model.MetadataToProto(m)}, nil
+}
+
+func (h *Handler) PutMetadata(ctx context.Context, req *gen.PutMetadataRequest) (*gen.PutMetadataResponse, error) {
+	if req == nil || req.Metadata == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "nil req or metadata")
+	}
+	if err := h.ctrl.Put(ctx, model.MetadataFromProto(req.Metadata)); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	return &gen.PutMetadataResponse{}, nil
 }

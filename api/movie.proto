@@ -34,7 +34,7 @@ message PutMetadataResponse {
 }
 
 service RatingService {
-  rpc GetAggregatedRaing(GetAggregatedRatingRequest) returns (GetAggregatedRatingResponse);
+  rpc GetAggregatedRating(GetAggregatedRatingRequest) returns (GetAggregatedRatingResponse);
   rpc PutRating(PutRatingRequest) returns (PutRatingResponse);
 }
 
