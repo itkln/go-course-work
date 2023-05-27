@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 	"movieapp/metadata/internal/repository"
 	"movieapp/metadata/pkg/model"
 )

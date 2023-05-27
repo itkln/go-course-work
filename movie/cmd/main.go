@@ -43,7 +43,6 @@ func main() {
 		}
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
-	log.Println("Starting the movie service")
 	metadataGateway := metadatagateway.New(registry)
 	ratingGateway := ratinggateway.New(registry)
 	svc := movie.New(ratingGateway, metadataGateway)
